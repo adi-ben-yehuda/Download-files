@@ -7,7 +7,7 @@ import os
 def printFile(fileName):
     dataLine = ''
     path = 'files/files' + fileName
-    file = open(path, 'r')
+    file = open(path, encoding="ISO-8859-1")
     line = file.readline()
     while line:
         if (len(line.split('<u>')) > 1):
@@ -62,10 +62,12 @@ server.listen(5)
 
 while True:
     client_socket, client_address = server.accept()
-    print('Connection from: ', client_address)
+    #print('Connection from: ', client_address)
     data = client_socket.recv(100)
     print('Received:', data)
     dataStr = data.decode("utf-8")
-    client_socket.send(str.encode(messageToClient(dataStr)))
+    mess = messageToClient(dataStr)
+    print(mess)
+    client_socket.send(str.encode(mess))
     client_socket.close()
     print('Client disconnected')
