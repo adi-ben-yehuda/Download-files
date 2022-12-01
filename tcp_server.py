@@ -5,38 +5,54 @@ import os
 
 
 def printFile(fileName):
-    dataLine = ''
+    data = ''
     path = 'files/files' + fileName
-    file = open(path, encoding="ISO-8859-1")
-    line = file.readline()
-    while line:
-        if (len(line.split('<u>')) > 1):
-            dataLine += (str)(line.split('<u>')[1]).split('</u>')[0]
+    endFile = fileName.split('.')[1]
+    if endFile == 'ico' or endFile == 'jpg':
+        file = open(path, 'rb')
+        data = file.read()
 
+    else:
+        file = open(path, encoding="ISO-8859-1")
         line = file.readline()
+        while line:
+            if (len(line.split('<u>')) > 1):
+                data += (str)(line.split('<u>')[1]).split('</u>')[0]
+
+            line = file.readline()
+        data = data.encode("utf-8")
 
     file.close()
-    return dataLine
+    return data
 
-def messageToClient(data):
-    status = data.split()[2]
+def getFileName(data):
     fileName = data.split(' ')[1]
+    ## Check if the name file is '/'- we want the index.html file.
     if fileName == '/':
         fileName = "/index.html"
+    return fileName
+
+def messageToClient(data):
+    status = data.split()[2] 
+    fileName = getFileName(data)
     
+    ## Check if the file is in the directory.
     if(fileExist(fileName)):
+        ##message we send if the file name is 'redirect'.
         if fileName == 'redirect':
             status += " 301 Moved Permanetly"
             connection = "Connection: close"
             location = "Location: /result.html"
             message = status + '\n' + connection + '\n' + location + '\n\n'
         else:
+            ## If the file name is the directory
             status += " 200 OK"
             connection = data.split('\n')[2].split('\r')[0]
             contentFile = printFile(fileName)
             length = "Content-Length: " + (str)(len(contentFile))
-            message = status + '\n' + connection + '\n' + length  + '\n\n' + contentFile
+            message = status + '\n' + connection + '\n' + length  + '\n\n'
     else:
+        ## If the file is not in the directory.
         status += " 404 Not Found"
         connection = "Connection: close"
         message = status + '\n' + connection + '\n\n'
@@ -61,13 +77,18 @@ server.bind(('', 8080))
 server.listen(5)
 
 while True:
-    client_socket, client_address = server.accept()
-    #print('Connection from: ', client_address)
-    data = client_socket.recv(100)
-    print('Received:', data)
-    dataStr = data.decode("utf-8")
-    mess = messageToClient(dataStr)
-    print(mess)
-    client_socket.send(str.encode(mess))
-    client_socket.close()
-    print('Client disconnected')
+        client_socket, client_address = server.accept()
+        #print('Connection from: ', client_address)
+        print('here')
+        data = client_socket.recv(100)
+        print('Received:', data)
+        dataStr = data.decode("utf-8")
+        mess = messageToClient(dataStr)
+        print(mess)
+        client_socket.send(str.encode(mess) + printFile(getFileName(dataStr)))
+         
+        
+        #client_socket.send(printFile(getFileName(dataStr)))
+        connection = dataStr.split('\n')[2].split('\r')[0]
+        if connection == "Connection: close":
+            client_socket.close()
