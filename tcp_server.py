@@ -3,6 +3,7 @@ import sys
 import os
 
 
+## Read file as bytes and return the data.
 def printImg(fileName): 
     data = ''
     path = 'files/files' + fileName
@@ -11,16 +12,18 @@ def printImg(fileName):
     file.close()
     return data
 
+## heck the suffix of the file, read the data and return it.
 def printFile(fileName):
     data = ''
     path = 'files/files' + fileName
-    endFile = fileName.split('.')[1]
+    endFile = fileName.split('.')[1] ## Get the suffix of the file.
 
+    ## Check the suffix of the file and read accordingly.
     if endFile == 'ico' or endFile == 'jpg':
         data = printImg(fileName)
 
     else:
-        file = open(path, encoding="ISO-8859-1")
+        file = open(path, encoding = "ISO-8859-1")
         line = file.readline()
         while line:
             if (len(line.split('<u>')) > 1):
@@ -32,6 +35,7 @@ def printFile(fileName):
         
     return data
 
+## Get the name of the file.
 def getFileName(data):
     fileName = data.split(' ')[1]
     ## Check if the name file is '/'- we want the index.html file.
@@ -39,13 +43,14 @@ def getFileName(data):
         fileName = "/index.html"
     return fileName
 
+## Create the message to send to the client.
 def messageToClient(data):
     status = data.split()[2] 
     fileName = getFileName(data)
     
     ## Check if the file is in the directory.
     if(fileExist(fileName)):
-        ##message we send if the file name is 'redirect'.
+        ## Message we send if the file name is 'redirect'.
         if fileName == 'redirect':
             status += " 301 Moved Permanetly"
             connection = "Connection: close"
@@ -67,7 +72,7 @@ def messageToClient(data):
     return message
         
 
-
+# Check if file exist in the directory.
 def fileExist(fileName):
     path = 'files/files' + fileName
     return os.path.exists(path)
@@ -79,6 +84,7 @@ args = sys.argv
 #if(len(args) == 2 and args[1].isnumeric() and (int)(args[1]) in range(0, 65535)):
 #  port = (int)(args[1])
 
+## Create socket.
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind(('', 8081))
 server.listen(5)
@@ -90,10 +96,12 @@ while True:
         data = client_socket.recv(100)
         print('Received:', data)
         dataStr = data.decode("utf-8")
+        ## Create the massage(the content and its details) and send to the client.
         message = str.encode(messageToClient(dataStr))
         content = printFile(getFileName(dataStr))
         client_socket.send(message + content)
         
+        ## Check if the client ask to close the conncection.
         connection = dataStr.split('\n')[2].split('\r')[0]
         if connection == "Connection: close":
             client_socket.close()
