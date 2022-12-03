@@ -2,7 +2,6 @@ import socket
 import sys
 import os
 
-
 def printImg(fileName): 
     data = ''
     path = 'files/files' + fileName
@@ -12,7 +11,9 @@ def printImg(fileName):
     return data
 
 def printFile(fileName):
-    data = ''
+    data = ''.encode("utf-8")
+    space = ' '.encode("utf-8")
+    isBody = False
     path = 'files/files' + fileName
     endFile = fileName.split('.')[1]
 
@@ -23,13 +24,30 @@ def printFile(fileName):
         file = open(path, encoding="ISO-8859-1")
         line = file.readline()
         while line:
-            if (len(line.split('<u>')) > 1):
-                data += (str)(line.split('<u>')[1]).split('</u>')[0]
+            if ('<body>' in line):
+                isBody = True
+            if isBody:
+                ## For showing an image
+                if '<img' in line:
+                    fileNameOfImg = line.split('<img src="')[1].split('"')[0]
+                    endFileOfImg = fileNameOfImg.split('.')[1]
+                    if endFileOfImg == 'ico' or endFileOfImg == 'jpg':
+                        data += printImg(fileNameOfImg) + space
+                ## For text
+                elif '>' in line and 'body' not in line:
+                    sent = line.split('>')
+                    for p in sent:
+                        if not p.startswith('\t') and not p.startswith('<'):
+                            data += p.split('<')[0].encode("utf-8") + space
+
+                elif '</body' in line:
+                    isBody = False
+                    break
 
             line = file.readline()
-        data = data.encode("utf-8")
+
         file.close()
-        
+
     return data
 
 def getFileName(data):
@@ -51,6 +69,7 @@ def messageToClient(data):
             connection = "Connection: close"
             location = "Location: /result.html"
             message = status + '\n' + connection + '\n' + location + '\n\n'
+            finalMess = str.encode(message)
         else:
             ## If the file name is the directory
             status += " 200 OK"
@@ -58,13 +77,15 @@ def messageToClient(data):
             contentFile = printFile(fileName)
             length = "Content-Length: " + (str)(len(contentFile))
             message = status + '\n' + connection + '\n' + length  + '\n\n'
+            finalMess = str.encode(message) + contentFile
     else:
         ## If the file is not in the directory.
         status += " 404 Not Found"
         connection = "Connection: close"
         message = status + '\n' + connection + '\n\n'
+        finalMess = str.encode(message)
 
-    return message
+    return finalMess
         
 
 
@@ -90,10 +111,11 @@ while True:
         data = client_socket.recv(100)
         print('Received:', data)
         dataStr = data.decode("utf-8")
-        message = str.encode(messageToClient(dataStr))
-        content = printFile(getFileName(dataStr))
-        client_socket.send(message + content)
+        message = messageToClient(dataStr)
+        client_socket.send(message)
         
         connection = dataStr.split('\n')[2].split('\r')[0]
         if connection == "Connection: close":
             client_socket.close()
+
+        client_socket.close()
