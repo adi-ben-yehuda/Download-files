@@ -12,7 +12,7 @@ def printImg(fileName):
     file.close()
     return data
 
-## heck the suffix of the file, read the data and return it.
+## Check the suffix of the file, read the data and return it.
 def printFile(fileName):
     data = ''
     path = 'files/files' + fileName
