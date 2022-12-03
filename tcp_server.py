@@ -3,14 +3,21 @@ import sys
 import os
 
 
+def printImg(fileName): 
+    data = ''
+    path = 'files/files' + fileName
+    file = open(path, 'rb')
+    data = file.read()
+    file.close()
+    return data
 
 def printFile(fileName):
     data = ''
     path = 'files/files' + fileName
     endFile = fileName.split('.')[1]
+
     if endFile == 'ico' or endFile == 'jpg':
-        file = open(path, 'rb')
-        data = file.read()
+        data = printImg(fileName)
 
     else:
         file = open(path, encoding="ISO-8859-1")
@@ -21,8 +28,8 @@ def printFile(fileName):
 
             line = file.readline()
         data = data.encode("utf-8")
-
-    file.close()
+        file.close()
+        
     return data
 
 def getFileName(data):
@@ -73,7 +80,7 @@ args = sys.argv
 #  port = (int)(args[1])
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.bind(('', 8080))
+server.bind(('', 8081))
 server.listen(5)
 
 while True:
@@ -83,12 +90,10 @@ while True:
         data = client_socket.recv(100)
         print('Received:', data)
         dataStr = data.decode("utf-8")
-        mess = messageToClient(dataStr)
-        print(mess)
-        client_socket.send(str.encode(mess) + printFile(getFileName(dataStr)))
-         
+        message = str.encode(messageToClient(dataStr))
+        content = printFile(getFileName(dataStr))
+        client_socket.send(message + content)
         
-        #client_socket.send(printFile(getFileName(dataStr)))
         connection = dataStr.split('\n')[2].split('\r')[0]
         if connection == "Connection: close":
             client_socket.close()
