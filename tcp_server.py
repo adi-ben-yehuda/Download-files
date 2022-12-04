@@ -5,12 +5,18 @@ import os
 def printImg(fileName): 
     data = ''
     path = 'files/files' + fileName
-    file = open(path, 'rb')
-    data = file.read()
-    file.close()
-    return data
+
+    with open(path, 'rb') as f:
+        contents = f.read()
+
+    #file = open(path, 'rb')
+    #data = file.read()
+    #file.close()
+    #return data
+    return contents
 
 def printFile(fileName):
+    
     data = ''.encode("utf-8")
     space = ' '.encode("utf-8")
     isBody = False
@@ -48,6 +54,7 @@ def printFile(fileName):
 
         file.close()
 
+    
     return data
 
 def getFileName(data):
@@ -101,7 +108,7 @@ args = sys.argv
 #  port = (int)(args[1])
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.bind(('', 8081))
+server.bind(('', 8080))
 server.listen(5)
 
 while True:
@@ -112,7 +119,7 @@ while True:
         print('Received:', data)
         dataStr = data.decode("utf-8")
         message = messageToClient(dataStr)
-        client_socket.send(message)
+        client_socket.send(message)        
         
         connection = dataStr.split('\n')[2].split('\r')[0]
         if connection == "Connection: close":
