@@ -2,39 +2,6 @@ import socket
 import sys
 import os
 
-
-## Read file as bytes and return the data.
-def printImg(fileName): 
-    data = ''
-    path = 'files/files' + fileName
-    file = open(path, 'rb')
-    data = file.read()
-    file.close()
-    return data
-
-## heck the suffix of the file, read the data and return it.
-def printFile(fileName):
-    data = ''
-    path = 'files/files' + fileName
-    endFile = fileName.split('.')[1] ## Get the suffix of the file.
-
-    ## Check the suffix of the file and read accordingly.
-    if endFile == 'ico' or endFile == 'jpg':
-        data = printImg(fileName)
-
-    else:
-        file = open(path, encoding = "ISO-8859-1")
-        line = file.readline()
-        while line:
-            if (len(line.split('<u>')) > 1):
-                data += (str)(line.split('<u>')[1]).split('</u>')[0]
-
-            line = file.readline()
-        data = data.encode("utf-8")
-        file.close()
-        
-    return data
-
 ## Get the name of the file.
 def getFileName(data):
     fileName = data.split(' ')[1]
@@ -47,6 +14,8 @@ def getFileName(data):
 def messageToClient(data):
     status = data.split()[2] 
     fileName = getFileName(data)
+    path = 'files/files' + getFileName(dataStr)
+    
     
     ## Check if the file is in the directory.
     if(fileExist(fileName)):
@@ -56,27 +25,36 @@ def messageToClient(data):
             connection = "Connection: close"
             location = "Location: /result.html"
             message = status + '\n' + connection + '\n' + location + '\n\n'
+            finalMess = str.encode(message)
         else:
             ## If the file name is the directory
             status += " 200 OK"
             connection = data.split('\n')[2].split('\r')[0]
-            contentFile = printFile(fileName)
-            length = "Content-Length: " + (str)(len(contentFile))
+            size = os.path.getsize(path)
+            length = "Content-Length: " + (str)(size)
             message = status + '\n' + connection + '\n' + length  + '\n\n'
+            finalMess = str.encode(message)
     else:
         ## If the file is not in the directory.
         status += " 404 Not Found"
         connection = "Connection: close"
         message = status + '\n' + connection + '\n\n'
+        finalMess = str.encode(message)
 
-    return message
+    return finalMess
         
 
 # Check if file exist in the directory.
 def fileExist(fileName):
     path = 'files/files' + fileName
     return os.path.exists(path)
-    
+
+def openFile(fileName):
+    path = 'files/files' + fileName
+    file = None
+    if(fileExist(fileName)):
+        file = open(path, 'rb')
+    return file
 
 
 ## Get data from the command line and check if valid.
@@ -86,22 +64,35 @@ args = sys.argv
 
 ## Create socket.
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.bind(('', 8081))
+server.bind(('', 8080))
 server.listen(5)
+client_socket, client_address = server.accept()
 
 while True:
-        client_socket, client_address = server.accept()
-        #print('Connection from: ', client_address)
         print('here')
-        data = client_socket.recv(100)
+        
+        data = client_socket.recv(1024).decode("utf-8")
+        #while not data.endswith('\r\n\r\n'):
+         #   data += client_socket.recv(1024).decode("utf-8")
+
         print('Received:', data)
-        dataStr = data.decode("utf-8")
-        ## Create the massage(the content and its details) and send to the client.
-        message = str.encode(messageToClient(dataStr))
-        content = printFile(getFileName(dataStr))
-        client_socket.send(message + content)
+        dataStr = data
+
+        message = messageToClient(dataStr)
+        client_socket.send(message)
+
+        file = openFile(getFileName(dataStr))
+        if file != None:
+            client_socket.sendfile(file)
+            file.close()
+                 
         
         ## Check if the client ask to close the conncection.
         connection = dataStr.split('\n')[2].split('\r')[0]
         if connection == "Connection: close":
             client_socket.close()
+        ## If the connection isn't a keep alive, 
+        # close the connection and open a new socket.
+        elif connection != "Connection: keep-alive":
+            client_socket.close()
+            client_socket, client_address = server.accept()
