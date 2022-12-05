@@ -63,7 +63,7 @@ args = sys.argv
 
 ## Create socket.
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.bind(('', 8088))
+server.bind(('', 8080))
 server.listen(5)
 client_socket, client_address = server.accept()
 client_socket.settimeout(1)
@@ -110,3 +110,4 @@ while True:
         client_socket.close()
         client_socket, client_address = server.accept()
         client_socket.settimeout(1)
+
