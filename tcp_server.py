@@ -14,26 +14,25 @@ def getFileName(data):
 def messageToClient(data):
     status = data.split()[2] 
     fileName = getFileName(data)
-    path = 'files/files' + getFileName(dataStr)
-    
+    path = 'files/files' + fileName
+
+    ## Message we send if the file name is 'redirect'.
+    if fileName == '/redirect':
+        status += " 301 Moved Permanetly"
+        connection = "Connection: close"
+        location = "Location: /result.html"
+        message = status + '\n' + connection + '\n' + location + '\n\n'
+        finalMess = str.encode(message)
     
     ## Check if the file is in the directory.
-    if(fileExist(fileName)):
-        ## Message we send if the file name is 'redirect'.
-        if fileName == 'redirect':
-            status += " 301 Moved Permanetly"
-            connection = "Connection: close"
-            location = "Location: /result.html"
-            message = status + '\n' + connection + '\n' + location + '\n\n'
-            finalMess = str.encode(message)
-        else:
-            ## If the file name is the directory
-            status += " 200 OK"
-            connection = data.split('\n')[2].split('\r')[0]
-            size = os.path.getsize(path)
-            length = "Content-Length: " + (str)(size)
-            message = status + '\n' + connection + '\n' + length  + '\n\n'
-            finalMess = str.encode(message)
+    elif(fileExist(fileName)):
+        ## If the file name is the directory
+        status += " 200 OK"
+        connection = data.split('\n')[2].split('\r')[0]
+        size = os.path.getsize(path)
+        length = "Content-Length: " + (str)(size)
+        message = status + '\n' + connection + '\n' + length  + '\n\n'
+        finalMess = str.encode(message)
     else:
         ## If the file is not in the directory.
         status += " 404 Not Found"
@@ -64,35 +63,50 @@ args = sys.argv
 
 ## Create socket.
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.bind(('', 8080))
+server.bind(('', 8088))
 server.listen(5)
 client_socket, client_address = server.accept()
+client_socket.settimeout(1)
+
 
 while True:
-        print('here')
-        
-        data = client_socket.recv(1024).decode("utf-8")
-        #while not data.endswith('\r\n\r\n'):
-         #   data += client_socket.recv(1024).decode("utf-8")
-
-        print('Received:', data)
-        dataStr = data
-
-        message = messageToClient(dataStr)
-        client_socket.send(message)
-
-        file = openFile(getFileName(dataStr))
-        if file != None:
-            client_socket.sendfile(file)
-            file.close()
-                 
-        
-        ## Check if the client ask to close the conncection.
-        connection = dataStr.split('\n')[2].split('\r')[0]
-        if connection == "Connection: close":
-            client_socket.close()
-        ## If the connection isn't a keep alive, 
-        # close the connection and open a new socket.
-        elif connection != "Connection: keep-alive":
+    print("here")
+    try:
+        data = client_socket.recv(4096).decode("utf-8")
+        if data == '':
             client_socket.close()
             client_socket, client_address = server.accept()
+            client_socket.settimeout(1)
+        else:
+            while not data.endswith('\r\n\r\n'):
+                data += client_socket.recv(4096).decode("utf-8")
+
+            print('Received:', data)
+
+            message = messageToClient(data)
+            client_socket.send(message)
+            fileName = getFileName(data)
+
+            if fileName == '/redirect':
+                fileName = '/result.html'
+
+            file = openFile(fileName)
+            if file != None:
+                client_socket.sendfile(file)
+                file.close()
+                        
+            
+            ## Check if the client ask to close the conncection.
+            connection = data.split('\n')[2].split('\r')[0]
+            if connection == "Connection: close":
+                client_socket.close()
+            ## If the connection isn't a keep alive, 
+            # close the connection and open a new socket.
+            elif connection != "Connection: keep-alive":
+                client_socket.close()
+                client_socket, client_address = server.accept()
+                client_socket.settimeout(1)
+    except:
+        client_socket.close()
+        client_socket, client_address = server.accept()
+        client_socket.settimeout(1)
