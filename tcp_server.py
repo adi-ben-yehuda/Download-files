@@ -29,7 +29,7 @@ def messageToClient(data):
     elif(fileExist(fileName)):
         ## If the file name is in the directory
         status += " 200 OK"
-        connection = data.split('\n')[2].split('\r')[0]
+        connection = "Connection: " + data.split("Connection: ")[1].split("\r")[0]
         size = os.path.getsize(path)
         length = "Content-Length: " + (str)(size)
         message = status + '\n' + connection + '\n' + length  + '\n\n'
@@ -99,13 +99,13 @@ while True:
                 client_socket.sendfile(file)
                 file.close()
                         
-            connection = data.split('\n')[2].split('\r')[0]
+            connection = data.split("Connection: ")[1].split("\r")[0]
             ## Check if the client asks for closing the conncection.
-            if connection == "Connection: close":
+            if connection == "close":
                 client_socket.close()
             # If the connection isn't a keep alive, 
             # close the connection and open a new socket.
-            elif connection != "Connection: keep-alive":
+            elif connection != "keep-alive":
                 client_socket.close()
                 client_socket, client_address = server.accept()
                 client_socket.settimeout(1)
