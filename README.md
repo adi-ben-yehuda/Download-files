@@ -8,7 +8,6 @@ In this project, the client sends through the browser using the TCP protocol, to
 * [Installation](#installation)
 * [Contact](#Contact)
 
-
 ## General Information
 This project implements a TCP server that functions as follows: The client sends to the server the name of a file he wishes to download from (that is, for the server to send back to him).
 The files are located in a folder named files which is in the same folder where the server is located. The file name can also include a path. That is, if the client sent only the name of the file, then the file should be inside the files folder at the top level. If the file name also contains a folder path, the server searches for the file according to the path inside the files folder.
@@ -91,16 +90,19 @@ It doesn't matter what appeared in the connection field that came from the clien
 In addition, the server must print to the screen the requests it received from the client. The entire request - but without any addition.
 
 Examples: 
+
 <img width="480" alt="image" src="https://user-images.githubusercontent.com/75027826/226167189-da35a8c1-0bcc-4a51-b3e3-5d786951b835.png">
+
 
 <img width="835" alt="image" src="https://user-images.githubusercontent.com/75027826/226167520-20417e88-3ce6-4bed-8c39-72495e2e30b2.png">
 
 An example of a file that does not exist:
+
 <img width="617" alt="image" src="https://user-images.githubusercontent.com/75027826/226167640-910d2648-1bba-452e-a56c-070b179241ec.png">
 
 An example of browsing /redirect. The browser changed the address according to the logic defined above.
-<img width="579" alt="image" src="https://user-images.githubusercontent.com/75027826/226167659-a41de4ef-a18c-4887-b1cd-edee15085997.png">
 
+<img width="579" alt="image" src="https://user-images.githubusercontent.com/75027826/226167659-a41de4ef-a18c-4887-b1cd-edee15085997.png">
 
 ## Installation
 Before installing this project, you need to install on your computer:
