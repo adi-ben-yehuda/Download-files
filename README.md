@@ -1,13 +1,11 @@
-# network_ex2
-# Chat
+# Download files from the server through the browser
 
 ## Introduction
-In this project, we would like to implement a simple chat using UDP Protocol. Our chat will behave in a similar way to a WhatsApp group, where any member of the group can write, and every message someone writes is sent to all members of the group. Please note, when someone sends a message to the group - the message is sent to the server immediately. However, the server will send the appropriate messages to clients only when they contact the server.
+In this project, the client sends through the browser using the TCP protocol, to the server the name of the file from which he wishes to download (that is, for the server to send back to him). The server sends the correct file to the client and the file data is displayed in the browser.
 
 ## Table of contents
 * [General Information](#general-information)
 * [Installation](#installation)
-* [Project status](#project-status)
 * [Contact](#Contact)
 
 
@@ -87,11 +85,22 @@ Location: /result.html
 
 ~~~~
 
-
 Please note, in the case of 404 and 301 you must always return: Connection: close
 It doesn't matter what appeared in the connection field that came from the client, close the connection and continue to the next connection.
 
 In addition, the server must print to the screen the requests it received from the client. The entire request - but without any addition.
+
+Examples: 
+<img width="480" alt="image" src="https://user-images.githubusercontent.com/75027826/226167189-da35a8c1-0bcc-4a51-b3e3-5d786951b835.png">
+
+<img width="835" alt="image" src="https://user-images.githubusercontent.com/75027826/226167520-20417e88-3ce6-4bed-8c39-72495e2e30b2.png">
+
+An example of a file that does not exist:
+<img width="617" alt="image" src="https://user-images.githubusercontent.com/75027826/226167640-910d2648-1bba-452e-a56c-070b179241ec.png">
+
+An example of browsing /redirect. The browser changed the address according to the logic defined above.
+<img width="579" alt="image" src="https://user-images.githubusercontent.com/75027826/226167659-a41de4ef-a18c-4887-b1cd-edee15085997.png">
+
 
 ## Installation
 Before installing this project, you need to install on your computer:
@@ -111,18 +120,17 @@ That is, the IP address of the server, colons, then the port your server is list
 http://1.2.3.4:80/
 ```
 This line addresses the server located at address 1.2.3.4 and listens to port 80 and requests the path /
+If you run the server on your computer, you can write localhost instead of the local IP address 127.0.0.1
 
-Open new terminals for the clients and run the following command:
+Open new terminals for the server and run the following command:
 
 ```
-python client.py ip port
+python server.py port
 ```
 For example: 
 ```
-python client.py 127.0.0.1 12345
+python server.py 12345
 ```
-## Project status 
-The project is in the beginning stages and will develop over time.
 
 ## Contact
 Created by @adi-ben-yehuda and @ShaharMosh - feel free to contact us!
