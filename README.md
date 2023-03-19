@@ -38,9 +38,60 @@ Connection: close
 …
 ~~~~
 
+The client sent additional information - marked by three dots, but it is not relevant because our server ignores it.
+And the server sent back the following response along with the content of the index.html file:
+
+~~~~
+HTTP/1.1 200 OK
+Connection: close
+Content-Length: 11
+
+hello world
+~~~~~
+
+If the value of the connection field is close (as in the example above), close the connection after sending the file and handle the next connection. On the other hand, if the value is keep-alive, the connection must be left open - and the client's next file request must be read as part of that connection.
+
+We will set the socket to a maximum period of time in which it is stuck on recv.
+The current connection on the server must be closed if the recv does not receive a response after 1 second, and handle the next client (new connection). Alternatively, if the server receives empty requests from the client, also in this case the current connection on the server must be closed and handle the next client (new connection).
+
+This is the behavior for all types of files, except for files with the extension jpg or ico. In such a case, the content of the file must be read on the server in binary form and then sent. For example:
+
+~~~~
+HTTP/1.1 200 OK
+Connection: keep-alive
+Content-Length: [length]
+
+[binary image data]
+~~~~~
+
+If the file does not exist, the server returns:
+
+~~~~~
+HTTP/1.1 404 Not Found
+Connection: close
+
+~~~~~
+
+If the client requested a file named: 
+
+~~~~
+GET /redirect HTTP/1.1
+~~~~
+
+The server returns:
+
+~~~~
+HTTP/1.1 301 Moved Permanently
+Connection: close
+Location: /result.html
+
+~~~~
 
 
+Please note, in the case of 404 and 301 you must always return: Connection: close
+It doesn't matter what appeared in the connection field that came from the client, close the connection and continue to the next connection.
 
+In addition, the server must print to the screen the requests it received from the client. The entire request - but without any addition.
 
 ## Installation
 Before installing this project, you need to install on your computer:
@@ -51,14 +102,16 @@ After it, run the following commands in the terminal:
 ```
 git clone https://github.com/adi-ben-yehuda/Chat.git
 ```
-Run the server:
+You must type the following in the address bar of the browser (chrome):
 ```
-python server.py port
+http://[Server IP]:[Server port][Path]
 ```
-For example: 
+That is, the IP address of the server, colons, then the port your server is listening to, then the path of the file. For example: 
 ```
-python server.py 12345
+http://1.2.3.4:80/
 ```
+This line addresses the server located at address 1.2.3.4 and listens to port 80 and requests the path /
+
 Open new terminals for the clients and run the following command:
 
 ```
