@@ -111,7 +111,7 @@ Before installing this project, you need to install on your computer:
 After it, run the following commands in the terminal:
 
 ```
-git clone https://github.com/ShaharMosh/network_ex2.git
+git clone https://github.com/adi-ben-yehuda/Download-files.git
 ```
 You must type the following in the address bar of the browser (chrome):
 ```
